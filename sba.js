@@ -82,23 +82,23 @@ function getLearnerData(courseInfo, assignmentGroups, learnerSubmissions) {
         }
         const currentDate = new Date();
         const learnerResults = {};
-     
+
         learnerSubmissions.forEach(submission => {
             const { learner_id, assignment_id, submission: { submitted_at, score } } = submission;
             let learnerData = learnerResults[learner_id] || { id: learner_id, totalWeightedScore: 0, totalWeight: 0, assignments: {} };
-              
-              const assignmentGroup = assignmentGroups.find(group => group.assignments.some(assignment => assignment.id === assignment_id));
-              if (!assignmentGroup) return;  
-              const assignment = assignmentGroup.assignments.find(a => a.id === assignment_id);
-              if (!assignment) return;  
-              const dueDate = new Date(assignment.due_at);
-              if (currentDate < dueDate) return;  
-               
+
+            const assignmentGroup = assignmentGroups.find(group => group.assignments.some(assignment => assignment.id === assignment_id));
+            if (!assignmentGroup) return;
+            const assignment = assignmentGroup.assignments.find(a => a.id === assignment_id);
+            if (!assignment) return;
+            const dueDate = new Date(assignment.due_at);
+            if (currentDate < dueDate) return;
+
             if (typeof assignment.points_possible !== 'number' || assignment.points_possible <= 0) {
                 console.warn(`Invalid points_possible for assignment ${assignment_id}`);
                 return;
             }
-            
+
             let assignmentScore = score;
             if (new Date(submitted_at) > dueDate) {
                 assignmentScore = Math.max(0, assignmentScore - 0.1 * assignment.points_possible);  // 10% penalty
@@ -106,17 +106,25 @@ function getLearnerData(courseInfo, assignmentGroups, learnerSubmissions) {
             const scorePercentage = assignmentScore / assignment.points_possible;
             learnerData.assignments[assignment_id] = scorePercentage * 100;
 
-               // Accumulate weighted score for learner
-               learnerData.totalWeightedScore += scorePercentage * assignmentGroup.group_weight * assignment.points_possible;
-               learnerData.totalWeight += assignmentGroup.group_weight * assignment.points_possible;
-               learnerResults[learner_id] = learnerData;
-           });
-          
-           const result = Object.values(learnerResults).map(learner => {
-               const { id, totalWeightedScore, totalWeight, assignments } = learner;
-               return {
-                   id,
-                   avg: totalWeight > 0 ? (totalWeightedScore / totalWeight) * 100 : 0,
-                   ...assignments
-               };
-           });
+            // Accumulate weighted score for learner
+            learnerData.totalWeightedScore += scorePercentage * assignmentGroup.group_weight * assignment.points_possible;
+            learnerData.totalWeight += assignmentGroup.group_weight * assignment.points_possible;
+            learnerResults[learner_id] = learnerData;
+        });
+
+        const result = Object.values(learnerResults).map(learner => {
+            const { id, totalWeightedScore, totalWeight, assignments } = learner;
+            return {
+                id,
+                avg: totalWeight > 0 ? (totalWeightedScore / totalWeight) * 100 : 0,
+                ...assignments
+            };
+        });
+        return result;
+    } catch (error) {
+        console.error("Error processing learner data:", error.message);
+        return null;
+    }
+}
+
+console.log(getLearnerData(courseInfo, assignmentGroups, learnerSubmissions));
