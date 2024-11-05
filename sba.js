@@ -93,3 +93,15 @@ function getLearnerData(courseInfo, assignmentGroups, learnerSubmissions) {
               if (!assignment) return;  
               const dueDate = new Date(assignment.due_at);
               if (currentDate < dueDate) return;  
+               
+            if (typeof assignment.points_possible !== 'number' || assignment.points_possible <= 0) {
+                console.warn(`Invalid points_possible for assignment ${assignment_id}`);
+                return;
+            }
+            
+            let assignmentScore = score;
+            if (new Date(submitted_at) > dueDate) {
+                assignmentScore = Math.max(0, assignmentScore - 0.1 * assignment.points_possible);  // 10% penalty
+            }
+            const scorePercentage = assignmentScore / assignment.points_possible;
+            learnerData.assignments[assignment_id] = scorePercentage * 100;
