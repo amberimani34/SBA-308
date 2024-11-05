@@ -86,4 +86,10 @@ function getLearnerData(courseInfo, assignmentGroups, learnerSubmissions) {
         learnerSubmissions.forEach(submission => {
             const { learner_id, assignment_id, submission: { submitted_at, score } } = submission;
             let learnerData = learnerResults[learner_id] || { id: learner_id, totalWeightedScore: 0, totalWeight: 0, assignments: {} };
-         
+              
+              const assignmentGroup = assignmentGroups.find(group => group.assignments.some(assignment => assignment.id === assignment_id));
+              if (!assignmentGroup) return;  
+              const assignment = assignmentGroup.assignments.find(a => a.id === assignment_id);
+              if (!assignment) return;  
+              const dueDate = new Date(assignment.due_at);
+              if (currentDate < dueDate) return;  
