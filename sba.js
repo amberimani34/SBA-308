@@ -105,3 +105,18 @@ function getLearnerData(courseInfo, assignmentGroups, learnerSubmissions) {
             }
             const scorePercentage = assignmentScore / assignment.points_possible;
             learnerData.assignments[assignment_id] = scorePercentage * 100;
+
+               // Accumulate weighted score for learner
+               learnerData.totalWeightedScore += scorePercentage * assignmentGroup.group_weight * assignment.points_possible;
+               learnerData.totalWeight += assignmentGroup.group_weight * assignment.points_possible;
+               learnerResults[learner_id] = learnerData;
+           });
+          
+           const result = Object.values(learnerResults).map(learner => {
+               const { id, totalWeightedScore, totalWeight, assignments } = learner;
+               return {
+                   id,
+                   avg: totalWeight > 0 ? (totalWeightedScore / totalWeight) * 100 : 0,
+                   ...assignments
+               };
+           });
