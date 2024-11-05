@@ -101,12 +101,11 @@ function getLearnerData(courseInfo, assignmentGroups, learnerSubmissions) {
 
             let assignmentScore = score;
             if (new Date(submitted_at) > dueDate) {
-                assignmentScore = Math.max(0, assignmentScore - 0.1 * assignment.points_possible);  // 10% penalty
+                assignmentScore = Math.max(0, assignmentScore - 0.1 * assignment.points_possible);
             }
             const scorePercentage = assignmentScore / assignment.points_possible;
             learnerData.assignments[assignment_id] = scorePercentage * 100;
 
-            // Accumulate weighted score for learner
             learnerData.totalWeightedScore += scorePercentage * assignmentGroup.group_weight * assignment.points_possible;
             learnerData.totalWeight += assignmentGroup.group_weight * assignment.points_possible;
             learnerResults[learner_id] = learnerData;
